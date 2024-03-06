@@ -63,7 +63,7 @@ namespace SimpleCRUD.Controllers
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<ActionResult> PutUser(int id, User user)
         {
             if (id != user.Id)
@@ -90,7 +90,7 @@ namespace SimpleCRUD.Controllers
             return Ok();
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteUser(int id)
         {
             if (_dbContext.Users == null)
