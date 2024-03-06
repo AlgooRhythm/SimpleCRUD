@@ -57,6 +57,12 @@ namespace SimpleCRUD.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
+            //For data audit purposes
+            user.CreatedBy = 1;
+            user.CreatedDate = DateTime.Now;
+            user.UpdatedBy = 1;
+            user.UpdatedDate = DateTime.Now;
+
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
@@ -70,6 +76,14 @@ namespace SimpleCRUD.Controllers
             {
                 return BadRequest();
             }
+
+            //For data audit purposes
+            var existingEntity = _dbContext.Users.AsNoTracking().FirstOrDefault(u => u.Id == id);
+            user.CreatedBy = existingEntity.CreatedBy;
+            user.CreatedDate = existingEntity.CreatedDate;
+            user.UpdatedBy = 1;
+            user.UpdatedDate = DateTime.Now;
+
             _dbContext.Entry(user).State = EntityState.Modified;
 
             try
