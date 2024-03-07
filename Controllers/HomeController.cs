@@ -21,43 +21,38 @@ namespace SimpleCRUD.Controllers
             _userService = service;
         }
 
-        //[HttpGet]
-        //public List<User> GetSynchonouslyUsers()
-        //{
-        //    var user = _userService.GetFreelancerUsers();
-        //    return user.ToList();
-        //}
 
-        [HttpGet]
+        [HttpGet("AllUsers")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            if (_dbContext.Users == null)
+            var users = await _userService.GetFreelancerUsers();
+
+            if (users.FirstOrDefault() == null)
             {
                 return NotFound();
             }
-            return await _dbContext.Users.ToListAsync();
+
+            return users;
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        [HttpGet("ActiveUsers")]
+        public async Task<ActionResult<IEnumerable<User>>> GetActiveUsers()
         {
-            if (_dbContext.Users == null)
-            {
-                return NotFound();
-            }
-            var user = await _dbContext.Users.FindAsync(id);
-            if (user == null)
+            var users = await _userService.GetActiveFreelancerUsers();
+
+            if (users.FirstOrDefault() == null)
             {
                 return NotFound();
             }
 
-            return user;
+            return users;
         }
 
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
             //For data audit purposes
+            user.Status = 1;
             user.CreatedBy = 1;
             user.CreatedDate = DateTime.Now;
             user.UpdatedBy = 1;
@@ -66,7 +61,7 @@ namespace SimpleCRUD.Controllers
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
         }
 
         [HttpPut("{id}")]
@@ -79,6 +74,7 @@ namespace SimpleCRUD.Controllers
 
             //For data audit purposes
             var existingEntity = _dbContext.Users.AsNoTracking().FirstOrDefault(u => u.Id == id);
+            user.Status = existingEntity.Status;
             user.CreatedBy = existingEntity.CreatedBy;
             user.CreatedDate = existingEntity.CreatedDate;
             user.UpdatedBy = 1;
@@ -129,7 +125,5 @@ namespace SimpleCRUD.Controllers
         {
             return (_dbContext.Users?.Any(x => x.Id == id)).GetValueOrDefault();
         }
-
-
     }
 }
