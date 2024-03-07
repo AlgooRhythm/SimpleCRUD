@@ -22,10 +22,13 @@ namespace SimpleCRUD.Controllers
         }
 
 
-        [HttpGet("AllUsers")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        [HttpGet("GetUsers/{IsActiveUserOnly}")]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers(bool IsActiveUserOnly = false)
         {
             var users = await _userService.GetFreelancerUsers();
+
+            if (IsActiveUserOnly == true)
+                users = await _userService.GetActiveFreelancerUsers();
 
             if (users.FirstOrDefault() == null)
             {
@@ -35,17 +38,20 @@ namespace SimpleCRUD.Controllers
             return users;
         }
 
-        [HttpGet("ActiveUsers")]
-        public async Task<ActionResult<IEnumerable<User>>> GetActiveUsers()
+        [HttpGet("{id}")]
+        public async Task<ActionResult<User>> GetUsers(int id)
         {
-            var users = await _userService.GetActiveFreelancerUsers();
-
-            if (users.FirstOrDefault() == null)
+            if (_dbContext.Users == null)
+            {
+                return NotFound();
+            }
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user == null)
             {
                 return NotFound();
             }
 
-            return users;
+            return user;
         }
 
         [HttpPost]
