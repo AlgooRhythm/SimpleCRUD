@@ -106,6 +106,78 @@ namespace SimpleCRUD.Controllers
             return Ok();
         }
 
+        [HttpPut("ArchivedUser/{id}")]
+        public async Task<ActionResult> ArchivedUser(int id, User user)
+        {
+            if (id != user.Id)
+            {
+                return BadRequest();
+            }
+
+            //For data audit purposes
+            var existingEntity = _dbContext.Users.AsNoTracking().FirstOrDefault(u => u.Id == id);
+            user.Status = 0; //Archived the user
+            user.CreatedBy = existingEntity.CreatedBy;
+            user.CreatedDate = existingEntity.CreatedDate;
+            user.UpdatedBy = 1;
+            user.UpdatedDate = DateTime.Now;
+
+            _dbContext.Entry(user).State = EntityState.Modified;
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (UserAvailable(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return Ok();
+        }
+
+        [HttpPut("RestoreUser/{id}")]
+        public async Task<ActionResult> RestoreUser(int id, User user)
+        {
+            if (id != user.Id)
+            {
+                return BadRequest();
+            }
+
+            //For data audit purposes
+            var existingEntity = _dbContext.Users.AsNoTracking().FirstOrDefault(u => u.Id == id);
+            user.Status = 1; //Restore the archived user
+            user.CreatedBy = existingEntity.CreatedBy;
+            user.CreatedDate = existingEntity.CreatedDate;
+            user.UpdatedBy = 1;
+            user.UpdatedDate = DateTime.Now;
+
+            _dbContext.Entry(user).State = EntityState.Modified;
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (UserAvailable(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return Ok();
+        }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteUser(int id)
         {
