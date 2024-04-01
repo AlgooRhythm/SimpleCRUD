@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Serialization;
 using SimpleCRUD.Data;
 using SimpleCRUD.Services;
 
@@ -18,7 +19,16 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddScoped<UserService>();
 
+//JSON Serializer
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore).AddNewtonsoftJson(
+    options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+
 var app = builder.Build();
+
+//Enable CORS //Consume the services from the front-end project
+app.UseCors(C => C.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod()); //Not recommended for production 
+                                                                        //You should only whitelist the servers accordingly
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

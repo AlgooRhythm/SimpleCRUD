@@ -11,6 +11,7 @@ namespace SimpleCRUD.Services
         Task<List<User>> GetActiveFreelancerUsers();
 
     }
+
     public class UserService : IUserService
     {
         private readonly DataContext _context;
@@ -27,7 +28,7 @@ namespace SimpleCRUD.Services
 
         public async Task<List<User>> GetActiveFreelancerUsers()
         {
-            return _context.Users.Where(y => y.Status == 1).OrderBy(x => x.Id).ToList();
+            return await _context.Users.Where(y => y.Status == 1).OrderBy(x => x.Id).ToListAsync();
         }
     }
 }
