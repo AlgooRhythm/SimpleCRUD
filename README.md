@@ -7,7 +7,8 @@
 #	2.	Changed the connection string to your own database
 
 #	3.	Open the package manager console in the visual studio, and type these command (to create the table in your database), line by line.
-#			Add-Migration -Context -DataContext
+#			Add-Migration InitialCreate -Context ApplicationDbContext
+#     Add-Migration -Context -ApplicationDbContext
 #			Enable-Migrations -ContextTypeName DataContext
 #			Update-Database -Verbose
 
