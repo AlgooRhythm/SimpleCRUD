@@ -18,6 +18,9 @@ builder.Services.AddDbContext<DataContext>(options =>
 });
 
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<CountryCodesService>();
+
+builder.Services.AddHttpClient();
 
 //JSON Serializer
 builder.Services.AddControllers().AddNewtonsoftJson(options =>

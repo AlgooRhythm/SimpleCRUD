@@ -11,5 +11,7 @@ namespace SimpleCRUD.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<CountryCodes> CountryCodes { get; set; }
+
     }
 }
