@@ -21,6 +21,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CountryCodesService>();
+builder.Services.AddScoped<ClassificationCodesService>();
 
 builder.Services.AddHttpClient();
 
