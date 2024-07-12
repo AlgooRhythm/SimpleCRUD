@@ -9,6 +9,8 @@ using System.Net.Http;
 
 namespace SimpleCRUD.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class CountryCodesController : Controller
     {
         private readonly DataContext _dbContext;
@@ -31,7 +33,7 @@ namespace SimpleCRUD.Controllers
         [Route("GetAllCountryCodes")]
         public JsonResult GetAllCountryCodes()
         {
-            string query = "select * from dbo.CountryCodes";
+            string query = "select * from dbo.CountryCodes order by code";
             DataTable table = new DataTable();
             string sqlDatasource = _configuration.GetConnectionString("DefaultConnection");
             SqlDataReader myReader;
@@ -51,6 +53,9 @@ namespace SimpleCRUD.Controllers
             return new JsonResult(table);
         }
 
+        /// <summary>
+        /// Create new country codes manually
+        /// </summary>
         [HttpPost]
         [Route("CreateNewCountryCodes")]
         public async Task<IActionResult> CreateNewCountryCodes([FromForm] CountryCodes CountryCode)
@@ -90,62 +95,12 @@ namespace SimpleCRUD.Controllers
             }
         }
 
+        /// <summary>
+        /// Imports CountryCodes JSON data from LHDN (URL : https://sdk.myinvois.hasil.gov.my/files/CountryCodes.json) and save/updates the database.
+        /// </summary>
         [HttpPost]
-        [Route("import-json")]
-        public async Task<IActionResult> ImportJsonFromUrl()
-        {
-            var jsonFilePath = "https://sdk.myinvois.hasil.gov.my/files/CountryCodes.json";
-
-            try
-            {
-                var client = _httpClientFactory.CreateClient();
-                var response = await client.GetStringAsync(jsonFilePath);
-                var countries = System.Text.Json.JsonSerializer.Deserialize<List<CountryCodes>>(response);
-
-                if (countries == null)
-                {
-                    return BadRequest("Invalid JSON response.");
-                }
-
-                foreach (var countryCode in countries)
-                {
-                    // Check for duplicate
-                    var existingCountryCode = await _dbContext.CountryCodes
-                        .FirstOrDefaultAsync(cc => cc.Code == countryCode.Code);
-
-                    if (existingCountryCode != null)
-                    {
-                        //countryCode.UpdatedBy = 2;
-                        //countryCode.UpdatedDate = DateTime.Now;
-
-                        //_dbContext.Entry(countryCode).State = EntityState.Modified;
-                    }
-                    else
-                    {
-                        //For data audit purposes
-                        countryCode.Status = 1;
-                        countryCode.CreatedBy = 1;
-                        countryCode.CreatedDate = DateTime.Now;
-                        countryCode.UpdatedBy = 1;
-                        countryCode.UpdatedDate = countryCode.CreatedDate;
-
-                        _dbContext.CountryCodes.Add(countryCode);
-                    }
-                }
-
-                _dbContext.SaveChangesAsync();
-
-                return Ok("Country codes import successfully.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
-
-        [HttpPost]
-        [Route("import-json2")]
-        public async Task<IActionResult> ImportJsonFromUrl2()
+        [Route("import-CountryCode-fromLHDN")]
+        public async Task<IActionResult> ImportCountryCodeJsonFromLHDNUrl()
         {
             var jsonFilePath = "https://sdk.myinvois.hasil.gov.my/files/CountryCodes.json";
 
@@ -179,9 +134,7 @@ namespace SimpleCRUD.Controllers
                     }
                     else
                     {
-                        existingCountry.CreatedBy = 1;
-
-                        existingCountry.UpdatedBy = 3;
+                        existingCountry.UpdatedBy = 1;
                         existingCountry.UpdatedDate = DateTime.Now;
 
                         _dbContext.Entry(existingCountry).State = EntityState.Modified;

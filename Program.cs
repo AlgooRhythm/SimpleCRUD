@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using SimpleCRUD.Data;
 using SimpleCRUD.Services;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,17 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CountryCodesService>();
 
 builder.Services.AddHttpClient();
+
+// Register the Swagger generator, defining one or more Swagger documents
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "JsonToDbApi", Version = "v1" });
+
+    // Enable XML comments if you want to use them
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
 
 //JSON Serializer
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
