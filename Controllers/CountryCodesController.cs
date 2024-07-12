@@ -160,33 +160,35 @@ namespace SimpleCRUD.Controllers
                     return BadRequest("Invalid JSON response.");
                 }
 
-                foreach (var countryCode in countries)
+                foreach (var NewCountryCode in countries)
                 {
-                    // Check for duplicate
-                    var existingCountryCode = _dbContext.CountryCodes
-                        .Where(cc => cc.Code == countryCode.Code);
+                    var existingCountry = await _dbContext.CountryCodes
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(c => c.Code == NewCountryCode.Code);
 
-                    if (existingCountryCode != null)
+                    if (existingCountry == null)
                     {
-                        countryCode.UpdatedBy = 2;
-                        countryCode.UpdatedDate = DateTime.Now;
+                        //For data audit purposes
+                        NewCountryCode.Status = 1;
+                        NewCountryCode.CreatedBy = 1;
+                        NewCountryCode.CreatedDate = DateTime.Now;
+                        NewCountryCode.UpdatedBy = 1;
+                        NewCountryCode.UpdatedDate = NewCountryCode.CreatedDate;
 
-                        _dbContext.Entry(countryCode).State = EntityState.Modified;
+                        _dbContext.CountryCodes.Add(NewCountryCode);
                     }
                     else
                     {
-                        //For data audit purposes
-                        countryCode.Status = 1;
-                        countryCode.CreatedBy = 1;
-                        countryCode.CreatedDate = DateTime.Now;
-                        countryCode.UpdatedBy = 1;
-                        countryCode.UpdatedDate = countryCode.CreatedDate;
+                        existingCountry.CreatedBy = 1;
 
-                        _dbContext.CountryCodes.Add(countryCode);
+                        existingCountry.UpdatedBy = 3;
+                        existingCountry.UpdatedDate = DateTime.Now;
+
+                        _dbContext.Entry(existingCountry).State = EntityState.Modified;
                     }
                 }
 
-                _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
                 return Ok("Country codes import successfully.");
             }
